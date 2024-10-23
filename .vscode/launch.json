@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "HouvardaEleniMannLandon",
+            "request": "launch",
+            "mainClass": "HouvardaEleniMannLandon",
+            "projectName": "project3_15047566"
+        },
+        {
+            "name": "Attach to Edge",
+            "port": 9222,
+            "request": "attach",
+            "type": "msedge",
+            "webRoot": "${workspaceFolder}"
+        }
+    ]
+}
