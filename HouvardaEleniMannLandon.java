@@ -28,19 +28,36 @@ public class HouvardaEleniMannLandon {
     public static int[] encrypt(int plaintext[], int encryptionKey[][]) {
         int[] encryptedText = new int[plaintext.length];
         // for each pair
-        for (int i = 0; i < plaintext.length - 1; i++) {
+        for (int i = 0; i < plaintext.length - 1; i += 2) {
             encryptedText[i] = (encryptionKey[0][0] * plaintext[i]
-                    + encryptionKey[0][1] * plaintext[i + 1]) % 26;
+                    + encryptionKey[1][0] * plaintext[i + 1]) % 26;
 
-            encryptedText[i + 1] = (encryptionKey[1][0] * plaintext[i]
+            encryptedText[i + 1] = (encryptionKey[0][1] * plaintext[i]
                     + encryptionKey[1][1] * plaintext[i + 1]) % 26;
         }
         return encryptedText;
     }
 
     // decrypt multi-letter cipher text with with given key
-    public int[] decrypt(int ciphertext[], int decryptionKey[][]) {
-        return ciphertext;
+    public static int[] decrypt(int ciphertext[], int decryptionKey[][]) {
+        int[] decryptedText = new int[ciphertext.length];
+        for (int i = 0; i < ciphertext.length; i += 2) {
+            decryptedText[i] = (decryptionKey[0][0] * ciphertext[i]
+                    + decryptionKey[1][0] * ciphertext[i + 1]) % 26;
+
+            decryptedText[i + 1] = (decryptionKey[0][1] * ciphertext[i]
+                    + decryptionKey[1][1] * ciphertext[i + 1]) % 26;
+
+            if (decryptedText[i] < 0)
+                decryptedText[i] += 26;
+            if (decryptedText[i + 1] < 0)
+                decryptedText[i + 1] += 26;
+            if (decryptedText[i] < 0)
+                decryptedText[i] += 26;
+            if (decryptedText[i + 1] < 0)
+                decryptedText[i + 1] += 26;
+        }
+        return decryptedText;
 
     }
 
@@ -61,16 +78,21 @@ public class HouvardaEleniMannLandon {
         int[] encryption = encrypt(plaintext, encryptionKey);
         // B) PRINT OUT ENCRYPTION IN LETTERS NOT NUMBERS
         System.out.println("ENCRYPTION IN LETTERS");
-        System.out.println(alphabet.charAt(encryption[0]) + " " + alphabet.charAt(encryption[1]) + " "
-                + (alphabet.charAt(encryption[2]) + " " + alphabet.charAt(encryption[3])));
-        // System.out.println("check with normal nums: " + encryption[0] + " " +
-        // encryption[1] + " " + encryption[2] + " "
-        // + encryption[3]);
-
+        for (int i = 0; i < encryption.length; i++) {
+            System.out.print(alphabet.charAt(encryption[i]) + " ");
+            // test: System.out.print( encryption[i] + " ");
+        }
         // def ciphertext (MQGVGQSMJI) //not the same as one generated earlier
+        int[] ciphertext = { 12, 17, 6, 22, 6, 17, 19, 12, 9, 8 };
         // decrypt
+        int[] decryption = decrypt(ciphertext, decryptionKey); // this works with encryption var "JMUISCOOL" but not for
+                                                               // cipher text "GODUKESGO"
         // C) PRINOUT OUT CLEARTEXT IN LETTERS
-
+        System.out.println("\nDECRYPTION IN LETTERS");
+        for (int i = 0; i < encryption.length; i++) {
+            System.out.print(alphabet.charAt(decryption[i]) + " ");
+            // test: System.out.print( decryption[i] + " ");
+        }
         // extra credit?
     }
 }
