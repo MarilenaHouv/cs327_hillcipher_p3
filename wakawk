@@ -1,0 +1,161 @@
+public class WangXunhuaHillCipher {
+    private static final int MODULUS = 26;
+
+    public int[][] findDecryptionKey(int[][] encryptionKey) {
+        // Calculate determinant
+        int det = (encryptionKey[0][0] * encryptionKey[1][1] - encryptionKey[0][1] * encryptionKey[1][0]) % MODULUS;
+        if (det < 0) det += MODULUS;
+        
+        // Find modular multiplicative inverse of determinant
+        int detInverse = findModInverse(det, MODULUS);
+        
+        // Calculate adjugate matrix
+        int[][] adj = new int[2][2];
+        adj[0][0] = encryptionKey[1][1] % MODULUS;
+        adj[0][1] = (-encryptionKey[0][1]) % MODULUS;
+        adj[1][0] = (-encryptionKey[1][0]) % MODULUS;
+        adj[1][1] = encryptionKey[0][0] % MODULUS;
+        
+        // Handle negative modulus
+        if (adj[0][1] < 0) adj[0][1] += MODULUS;
+        if (adj[1][0] < 0) adj[1][0] += MODULUS;
+        
+        // Calculate inverse matrix
+        int[][] decryptionKey = new int[2][2];
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 2; j++) {
+                decryptionKey[i][j] = (adj[i][j] * detInverse) % MODULUS;
+            }
+        }
+        
+        return decryptionKey;
+    }
+    
+    // Extended Euclidean Algorithm to find modular multiplicative inverse
+    private int findModInverse(int a, int m) {
+        int[] result = extendedGCD(a, m);
+        int gcd = result[0];
+        int x = result[1];
+        
+        if (x < 0) {
+            x += m;
+        }
+        
+        return x;
+    }
+    
+    private int[] extendedGCD(int a, int b) {
+        if (a == 0) {
+            return new int[]{b, 0, 1};
+        }
+        
+        int[] values = extendedGCD(b % a, a);
+        int gcd = values[0];
+        int x1 = values[1];
+        int y1 = values[2];
+        
+        int x = y1 - (b / a) * x1;
+        int y = x1;
+        
+        return new int[]{gcd, x, y};
+    }
+    
+    public int[] encrypt(int[] plaintext, int[][] encryptionKey) {
+        // Pad plaintext if necessary
+        int len = plaintext.length;
+        if (len % 2 != 0) {
+            int[] temp = new int[len + 1];
+            System.arraycopy(plaintext, 0, temp, 0, len);
+            temp[len] = 0; // Pad with 'A'
+            plaintext = temp;
+            len++;
+        }
+        
+        int[] ciphertext = new int[len];
+        
+        // Process pairs of numbers
+        for (int i = 0; i < len; i += 2) {
+            int p1 = plaintext[i];
+            int p2 = plaintext[i + 1];
+            
+            ciphertext[i] = (encryptionKey[0][0] * p1 + encryptionKey[0][1] * p2) % MODULUS;
+            ciphertext[i + 1] = (encryptionKey[1][0] * p1 + encryptionKey[1][1] * p2) % MODULUS;
+        }
+        
+        return ciphertext;
+    }
+    
+    public int[] decrypt(int[] ciphertext, int[][] decryptionKey) {
+        return encrypt(ciphertext, decryptionKey); // Same process as encryption but with decryption key
+    }
+    
+    // Helper method to convert text to numbers
+    private int[] textToNumbers(String text) {
+        text = text.toUpperCase();
+        int[] numbers = new int[text.length()];
+        for (int i = 0; i < text.length(); i++) {
+            numbers[i] = text.charAt(i) - 'A';
+        }
+        return numbers;
+    }
+    
+    // Helper method to convert numbers to text
+    private String numbersToText(int[] numbers) {
+        StringBuilder text = new StringBuilder();
+        for (int number : numbers) {
+            text.append((char) ((number % 26) + 'A'));
+        }
+        return text.toString();
+    }
+    
+    // Helper method to print matrix
+    private void printMatrix(int[][] matrix) {
+        System.out.println("Matrix:");
+        for (int[] row : matrix) {
+            System.out.print("[ ");
+            for (int val : row) {
+                System.out.printf("%2d ", val);
+            }
+            System.out.println("]");
+        }
+    }
+    
+    public static void main(String[] args) {
+        WangXunhuaHillCipher hillCipher = new WangXunhuaHillCipher();
+        
+        // Given encryption key
+        int[][] encryptionKey = {
+            {16, 7},
+            {9, 14}
+        };
+        
+        // Print encryption key
+        System.out.println("Encryption Key:");
+        hillCipher.printMatrix(encryptionKey);
+        
+        // Calculate and print decryption key
+        int[][] decryptionKey = hillCipher.findDecryptionKey(encryptionKey);
+        System.out.println("\nDecryption Key:");
+        hillCipher.printMatrix(decryptionKey);
+        
+        // Test encryption
+        String plaintext = "JMUCSISCOOL";
+        int[] plaintextNumbers = hillCipher.textToNumbers(plaintext);
+        int[] encryptedNumbers = hillCipher.encrypt(plaintextNumbers, encryptionKey);
+        String ciphertext = hillCipher.numbersToText(encryptedNumbers);
+        
+        System.out.println("\nEncryption Test:");
+        System.out.println("Plaintext: " + plaintext);
+        System.out.println("Ciphertext: " + ciphertext);
+        
+        // Test decryption of given ciphertext
+        String testCiphertext = "MQGVGQSMJI";
+        int[] ciphertextNumbers = hillCipher.textToNumbers(testCiphertext);
+        int[] decryptedNumbers = hillCipher.decrypt(ciphertextNumbers, decryptionKey);
+        String decryptedText = hillCipher.numbersToText(decryptedNumbers);
+        
+        System.out.println("\nDecryption Test:");
+        System.out.println("Ciphertext: " + testCiphertext);
+        System.out.println("Decrypted: " + decryptedText);
+    }
+}
